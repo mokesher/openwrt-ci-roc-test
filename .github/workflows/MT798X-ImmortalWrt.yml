@@ -103,7 +103,6 @@ jobs:
       run: |
         chmod +x $DIY_SCRIPT
         cd $OPENWRT_PATH
-        wget -O feeds/packages/net/smartdns/Makefile https://raw.githubusercontent.com/immortalwrt/packages/master/net/smartdns/Makefile
         $GITHUB_WORKSPACE/$DIY_SCRIPT
 
     - name: Download DL Package(下载DL软件包)
