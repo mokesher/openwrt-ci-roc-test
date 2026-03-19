@@ -121,22 +121,25 @@ if [ -f "$TS_FILE" ]; then
 	echo "tailscale $TS_FILE has been fixed!"
 
 
-    local tailscale_path="$BUILD_DIR/feeds/small8/luci-app-tailscale/root/usr/share/luci/menu.d/luci-app-tailscale.json"
+    tailscale_path="$BUILD_DIR/feeds/small8/luci-app-tailscale/root/usr/share/luci/menu.d/luci-app-tailscale.json"
     if [ -d "$(dirname "$tailscale_path")" ] && [ -f "$tailscale_path" ]; then
         sed -i 's/services/vpn/g' "$tailscale_path"
     fi
 fi
 
-
-local file_path="$BUILD_DIR/feeds/small8/luci-app-quickstart/luasrc/controller/istore_backend.lua"
-local url="https://gist.githubusercontent.com/puteulanus/1c180fae6bccd25e57eb6d30b7aa28aa/raw/istore_backend.lua"
-if [ -f "$file_path" ]; then
-    echo "正在修复 quickstart..."
-    if ! curl -fsSL -o "$file_path" "$url"; then
-        echo "错误：从 $url 下载 istore_backend.lua 失败" >&2
-        exit 1
+fix_quickstart() {
+    local file_path="$BUILD_DIR/feeds/small8/luci-app-quickstart/luasrc/controller/istore_backend.lua"
+    local url="https://gist.githubusercontent.com/puteulanus/1c180fae6bccd25e57eb6d30b7aa28aa/raw/istore_backend.lua"
+    if [ -f "$file_path" ]; then
+        echo "正在修复 quickstart..."
+        if ! curl -fsSL -o "$file_path" "$url"; then
+            echo "错误：从 $url 下载 istore_backend.lua 失败" >&2
+            exit 1
+        fi
     fi
-fi
+}
+fix_quickstart
+
 ### PassWall & OpenClash ###
 
 # 移除 OpenWrt Feeds 自带的核心库
