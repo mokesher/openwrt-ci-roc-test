@@ -158,95 +158,95 @@ echo "baidu.com"  > package/luci-app-passwall/luci-app-passwall/root/usr/share/p
 
 
 
-update_diskman() {
-    local path="$BUILD_DIR/feeds/luci/applications/luci-app-diskman"
-    local repo_url="https://github.com/lisaac/luci-app-diskman.git"
-    if [ -d "$path" ]; then
-        echo "正在更新 diskman..."
-        cd "$BUILD_DIR/feeds/luci/applications" || return
-        \rm -rf "luci-app-diskman"
+# update_diskman() {
+#     local path="$BUILD_DIR/feeds/luci/applications/luci-app-diskman"
+#     local repo_url="https://github.com/lisaac/luci-app-diskman.git"
+#     if [ -d "$path" ]; then
+#         echo "正在更新 diskman..."
+#         cd "$BUILD_DIR/feeds/luci/applications" || return
+#         \rm -rf "luci-app-diskman"
 
-        if ! git clone --filter=blob:none --no-checkout "$repo_url" diskman; then
-            echo "错误：从 $repo_url 克隆 diskman 仓库失败" >&2
-            exit 1
-        fi
-        cd diskman || return
+#         if ! git clone --filter=blob:none --no-checkout "$repo_url" diskman; then
+#             echo "错误：从 $repo_url 克隆 diskman 仓库失败" >&2
+#             exit 1
+#         fi
+#         cd diskman || return
 
-        git sparse-checkout init --cone
-        git sparse-checkout set applications/luci-app-diskman || return
+#         git sparse-checkout init --cone
+#         git sparse-checkout set applications/luci-app-diskman || return
 
-        git checkout --quiet
+#         git checkout --quiet
 
-        mv applications/luci-app-diskman ../luci-app-diskman || return
-        cd .. || return
-        \rm -rf diskman
-        cd "$BUILD_DIR"
+#         mv applications/luci-app-diskman ../luci-app-diskman || return
+#         cd .. || return
+#         \rm -rf diskman
+#         cd "$BUILD_DIR"
 
-        sed -i 's/fs-ntfs /fs-ntfs3 /g' "$path/Makefile"
-        sed -i '/ntfs-3g-utils /d' "$path/Makefile"
-    fi
-}
-update_diskman
+#         sed -i 's/fs-ntfs /fs-ntfs3 /g' "$path/Makefile"
+#         sed -i '/ntfs-3g-utils /d' "$path/Makefile"
+#     fi
+# }
+# update_diskman
 
-_sync_luci_lib_docker() {
-    local lib_path="$BUILD_DIR/feeds/luci/libs/luci-lib-docker"
-    local repo_url="https://github.com/lisaac/luci-lib-docker.git"
+# _sync_luci_lib_docker() {
+#     local lib_path="$BUILD_DIR/feeds/luci/libs/luci-lib-docker"
+#     local repo_url="https://github.com/lisaac/luci-lib-docker.git"
 
-    if [ ! -d "$lib_path" ]; then
-        echo "正在同步 luci-lib-docker..."
-        mkdir -p "$BUILD_DIR/feeds/luci/libs" || return
-        cd "$BUILD_DIR/feeds/luci/libs" || return
+#     if [ ! -d "$lib_path" ]; then
+#         echo "正在同步 luci-lib-docker..."
+#         mkdir -p "$BUILD_DIR/feeds/luci/libs" || return
+#         cd "$BUILD_DIR/feeds/luci/libs" || return
 
-        if ! git clone --filter=blob:none --no-checkout "$repo_url" luci-lib-docker-tmp; then
-            echo "错误：从 $repo_url 克隆 luci-lib-docker 仓库失败" >&2
-            exit 1
-        fi
-        cd luci-lib-docker-tmp || return
+#         if ! git clone --filter=blob:none --no-checkout "$repo_url" luci-lib-docker-tmp; then
+#             echo "错误：从 $repo_url 克隆 luci-lib-docker 仓库失败" >&2
+#             exit 1
+#         fi
+#         cd luci-lib-docker-tmp || return
 
-        git sparse-checkout init --cone
-        git sparse-checkout set collections/luci-lib-docker || return
+#         git sparse-checkout init --cone
+#         git sparse-checkout set collections/luci-lib-docker || return
 
-        git checkout --quiet
+#         git checkout --quiet
 
-        mv collections/luci-lib-docker ../luci-lib-docker || return
-        cd .. || return
-        \rm -rf luci-lib-docker-tmp
-        cd "$BUILD_DIR"
-        echo "luci-lib-docker 同步完成"
-    fi
-}
-_sync_luci_lib_docker
+#         mv collections/luci-lib-docker ../luci-lib-docker || return
+#         cd .. || return
+#         \rm -rf luci-lib-docker-tmp
+#         cd "$BUILD_DIR"
+#         echo "luci-lib-docker 同步完成"
+#     fi
+# }
+# _sync_luci_lib_docker
 
-update_dockerman() {
-    local path="$BUILD_DIR/feeds/luci/applications/luci-app-dockerman"
-    local repo_url="https://github.com/lisaac/luci-app-dockerman.git"
-    if [ -d "$path" ]; then
-        echo "正在更新 dockerman..."
-        _sync_luci_lib_docker || return
+# update_dockerman() {
+#     local path="$BUILD_DIR/feeds/luci/applications/luci-app-dockerman"
+#     local repo_url="https://github.com/lisaac/luci-app-dockerman.git"
+#     if [ -d "$path" ]; then
+#         echo "正在更新 dockerman..."
+#         _sync_luci_lib_docker || return
 
-        cd "$BUILD_DIR/feeds/luci/applications" || return
-        \rm -rf "luci-app-dockerman"
+#         cd "$BUILD_DIR/feeds/luci/applications" || return
+#         \rm -rf "luci-app-dockerman"
 
-        if ! git clone --filter=blob:none --no-checkout "$repo_url" dockerman; then
-            echo "错误：从 $repo_url 克隆 dockerman 仓库失败" >&2
-            exit 1
-        fi
-        cd dockerman || return
+#         if ! git clone --filter=blob:none --no-checkout "$repo_url" dockerman; then
+#             echo "错误：从 $repo_url 克隆 dockerman 仓库失败" >&2
+#             exit 1
+#         fi
+#         cd dockerman || return
 
-        git sparse-checkout init --cone
-        git sparse-checkout set applications/luci-app-dockerman || return
+#         git sparse-checkout init --cone
+#         git sparse-checkout set applications/luci-app-dockerman || return
 
-        git checkout --quiet
+#         git checkout --quiet
 
-        mv applications/luci-app-dockerman ../luci-app-dockerman || return
-        cd .. || return
-        \rm -rf dockerman
-        cd "$BUILD_DIR"
+#         mv applications/luci-app-dockerman ../luci-app-dockerman || return
+#         cd .. || return
+#         \rm -rf dockerman
+#         cd "$BUILD_DIR"
 
-        echo "dockerman 更新完成"
-    fi
-}
-update_dockerman
+#         echo "dockerman 更新完成"
+#     fi
+# }
+# update_dockerman
 
 
 add_quickfile() {
