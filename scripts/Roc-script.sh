@@ -163,8 +163,7 @@ echo "baidu.com"  > package/luci-app-passwall/luci-app-passwall/root/usr/share/p
 for dir in $BUILD_DIR/feeds/*; do
     if [ -d "$dir" ] && [[ ! "$dir" == *.tmp ]] && [[ ! "$dir" == *.index ]] && [[ ! "$dir" == *.targetindex ]]; then
         if [[ $(basename "$dir") == "small8" ]]; then
-            ./scripts/feeds install -p small8 -f taskd luci-lib-taskd luci-app-store quickstart \
-        luci-app-quickstart luci-app-istorex
+            ./scripts/feeds install -p small8 -f taskd luci-lib-taskd luci-app-store quickstart luci-app-quickstart luci-app-istorex
 #        elif [[ $(basename "$dir") == "passwall" ]]; then
 #            install_passwall
         else
