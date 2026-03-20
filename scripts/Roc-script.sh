@@ -14,21 +14,6 @@ update_feeds() {
         [ -z "$(tail -c 1 "$FEEDS_PATH")" ] || echo "" >>"$FEEDS_PATH"
         echo "src-git small8 https://github.com/kenzok8/jell" >>"$FEEDS_PATH"
     fi
-
-#    if ! grep -q "openwrt-passwall" "$FEEDS_PATH"; then
-#        [ -z "$(tail -c 1 "$FEEDS_PATH")" ] || echo "" >>"$FEEDS_PATH"
-#        echo "src-git passwall https://github.com/Openwrt-Passwall/openwrt-passwall;main" >>"$FEEDS_PATH"
-#    fi
-#
-#    if ! grep -q "openwrt_bandix" "$BUILD_DIR/$FEEDS_CONF"; then
-#        [ -z "$(tail -c 1 "$BUILD_DIR/$FEEDS_CONF")" ] || echo "" >>"$BUILD_DIR/$FEEDS_CONF"
-#        echo 'src-git openwrt_bandix https://github.com/timsaya/openwrt-bandix.git;main' >>"$BUILD_DIR/$FEEDS_CONF"
-#    fi
-
-#    if ! grep -q "luci_app_bandix" "$BUILD_DIR/$FEEDS_CONF"; then
-#        [ -z "$(tail -c 1 "$BUILD_DIR/$FEEDS_CONF")" ] || echo "" >>"$BUILD_DIR/$FEEDS_CONF"
-#        echo 'src-git luci_app_bandix https://github.com/timsaya/luci-app-bandix.git;main' >>"$BUILD_DIR/$FEEDS_CONF"
-#    fi
 #
     if [ ! -f "$BUILD_DIR/include/bpf.mk" ]; then
         touch "$BUILD_DIR/include/bpf.mk"
@@ -120,25 +105,12 @@ if [ -f "$TS_FILE" ]; then
 	sed -i '/\/files/d' $TS_FILE
 	echo "tailscale $TS_FILE has been fixed!"
 
-
-    tailscale_path="$BUILD_DIR/feeds/small8/luci-app-tailscale/root/usr/share/luci/menu.d/luci-app-tailscale.json"
+    tailscale_path="$BUILD_DIR/feeds/packages/luci-app-tailscale/root/usr/share/luci/menu.d/luci-app-tailscale.json"
     if [ -d "$(dirname "$tailscale_path")" ] && [ -f "$tailscale_path" ]; then
         sed -i 's/services/vpn/g' "$tailscale_path"
     fi
 fi
 
-fix_quickstart() {
-    local file_path="$BUILD_DIR/feeds/small8/luci-app-quickstart/luasrc/controller/istore_backend.lua"
-    local url="https://gist.githubusercontent.com/puteulanus/1c180fae6bccd25e57eb6d30b7aa28aa/raw/istore_backend.lua"
-    if [ -f "$file_path" ]; then
-        echo "正在修复 quickstart..."
-        if ! curl -fsSL -o "$file_path" "$url"; then
-            echo "错误：从 $url 下载 istore_backend.lua 失败" >&2
-            exit 1
-        fi
-    fi
-}
-fix_quickstart
 
 ### PassWall & OpenClash ###
 
@@ -157,123 +129,6 @@ git clone --depth=1 https://github.com/vernesong/OpenClash package/luci-app-open
 echo "baidu.com"  > package/luci-app-passwall/luci-app-passwall/root/usr/share/passwall/rules/chnlist
 
 
-
-# update_diskman() {
-#     local path="$BUILD_DIR/feeds/luci/applications/luci-app-diskman"
-#     local repo_url="https://github.com/lisaac/luci-app-diskman.git"
-#     if [ -d "$path" ]; then
-#         echo "正在更新 diskman..."
-#         cd "$BUILD_DIR/feeds/luci/applications" || return
-#         \rm -rf "luci-app-diskman"
-
-#         if ! git clone --filter=blob:none --no-checkout "$repo_url" diskman; then
-#             echo "错误：从 $repo_url 克隆 diskman 仓库失败" >&2
-#             exit 1
-#         fi
-#         cd diskman || return
-
-#         git sparse-checkout init --cone
-#         git sparse-checkout set applications/luci-app-diskman || return
-
-#         git checkout --quiet
-
-#         mv applications/luci-app-diskman ../luci-app-diskman || return
-#         cd .. || return
-#         \rm -rf diskman
-#         cd "$BUILD_DIR"
-
-#         sed -i 's/fs-ntfs /fs-ntfs3 /g' "$path/Makefile"
-#         sed -i '/ntfs-3g-utils /d' "$path/Makefile"
-#     fi
-# }
-# update_diskman
-
-# _sync_luci_lib_docker() {
-#     local lib_path="$BUILD_DIR/feeds/luci/libs/luci-lib-docker"
-#     local repo_url="https://github.com/lisaac/luci-lib-docker.git"
-
-#     if [ ! -d "$lib_path" ]; then
-#         echo "正在同步 luci-lib-docker..."
-#         mkdir -p "$BUILD_DIR/feeds/luci/libs" || return
-#         cd "$BUILD_DIR/feeds/luci/libs" || return
-
-#         if ! git clone --filter=blob:none --no-checkout "$repo_url" luci-lib-docker-tmp; then
-#             echo "错误：从 $repo_url 克隆 luci-lib-docker 仓库失败" >&2
-#             exit 1
-#         fi
-#         cd luci-lib-docker-tmp || return
-
-#         git sparse-checkout init --cone
-#         git sparse-checkout set collections/luci-lib-docker || return
-
-#         git checkout --quiet
-
-#         mv collections/luci-lib-docker ../luci-lib-docker || return
-#         cd .. || return
-#         \rm -rf luci-lib-docker-tmp
-#         cd "$BUILD_DIR"
-#         echo "luci-lib-docker 同步完成"
-#     fi
-# }
-# _sync_luci_lib_docker
-
-# update_dockerman() {
-#     local path="$BUILD_DIR/feeds/luci/applications/luci-app-dockerman"
-#     local repo_url="https://github.com/lisaac/luci-app-dockerman.git"
-#     if [ -d "$path" ]; then
-#         echo "正在更新 dockerman..."
-#         _sync_luci_lib_docker || return
-
-#         cd "$BUILD_DIR/feeds/luci/applications" || return
-#         \rm -rf "luci-app-dockerman"
-
-#         if ! git clone --filter=blob:none --no-checkout "$repo_url" dockerman; then
-#             echo "错误：从 $repo_url 克隆 dockerman 仓库失败" >&2
-#             exit 1
-#         fi
-#         cd dockerman || return
-
-#         git sparse-checkout init --cone
-#         git sparse-checkout set applications/luci-app-dockerman || return
-
-#         git checkout --quiet
-
-#         mv applications/luci-app-dockerman ../luci-app-dockerman || return
-#         cd .. || return
-#         \rm -rf dockerman
-#         cd "$BUILD_DIR"
-
-#         echo "dockerman 更新完成"
-#     fi
-# }
-# update_dockerman
-
-
-add_quickfile() {
-    local repo_url="https://github.com/sbwml/luci-app-quickfile.git"
-    local target_dir="$BUILD_DIR/package/emortal/quickfile"
-    if [ -d "$target_dir" ]; then
-        rm -rf "$target_dir"
-    fi
-    echo "正在添加 luci-app-quickfile..."
-    if ! git clone --depth 1 "$repo_url" "$target_dir"; then
-        echo "错误：从 $repo_url 克隆 luci-app-quickfile 仓库失败" >&2
-        exit 1
-    fi
-
-    local makefile_path="$target_dir/quickfile/Makefile"
-    if [ -f "$makefile_path" ]; then
-        sed -i '/\t\$(INSTALL_BIN) \$(PKG_BUILD_DIR)\/quickfile-\$(ARCH_PACKAGES)/c\
-\tif [ "\$(ARCH_PACKAGES)" = "x86_64" ]; then \\\
-\t\t\$(INSTALL_BIN) \$(PKG_BUILD_DIR)\/quickfile-x86_64 \$(1)\/usr\/bin\/quickfile; \\\
-\telse \\\
-\t\t\$(INSTALL_BIN) \$(PKG_BUILD_DIR)\/quickfile-aarch64_generic \$(1)\/usr\/bin\/quickfile; \\\
-\tfi' "$makefile_path"
-    fi
-}
-add_quickfile
-
-
 #./scripts/feeds update -a
 #./scripts/feeds install -a
 
@@ -281,9 +136,7 @@ add_quickfile
 for dir in $BUILD_DIR/feeds/*; do
     if [ -d "$dir" ] && [[ ! "$dir" == *.tmp ]] && [[ ! "$dir" == *.index ]] && [[ ! "$dir" == *.targetindex ]]; then
         if [[ $(basename "$dir") == "small8" ]]; then
-            ./scripts/feeds install -p small8 -f taskd luci-lib-taskd luci-app-store quickstart luci-app-quickstart luci-app-istorex luci-app-xunlei
-#        elif [[ $(basename "$dir") == "passwall" ]]; then
-#            install_passwall
+            ./scripts/feeds install -p small8 -f taskd
         else
             ./scripts/feeds install -f -ap $(basename "$dir")
         fi
