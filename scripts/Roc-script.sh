@@ -136,7 +136,7 @@ echo "baidu.com"  > package/luci-app-passwall/luci-app-passwall/root/usr/share/p
 for dir in $BUILD_DIR/feeds/*; do
     if [ -d "$dir" ] && [[ ! "$dir" == *.tmp ]] && [[ ! "$dir" == *.index ]] && [[ ! "$dir" == *.targetindex ]]; then
         if [[ $(basename "$dir") == "small8" ]]; then
-            ./scripts/feeds install -p small8 -f taskd
+            ./scripts/feeds install -p small8 -f luci-i18n-quickstart-zh-cn quickstart luci-app-quickstart
         else
             ./scripts/feeds install -f -ap $(basename "$dir")
         fi
