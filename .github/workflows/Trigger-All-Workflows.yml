@@ -6,9 +6,12 @@ on:
     - cron: "0 18 * * 5"
 
 permissions:
-  contents: write
-  actions: write
+  contents: read
+  actions: read
 
 jobs:
     IPQ60XX-LibWrt:
       uses: ./.github/workflows/IPQ60XX-LibWrt.yml
+      permissions:
+        contents: write
+        actions: write
