@@ -127,11 +127,21 @@ chmod +x package/luci-app-athena-led/root/etc/init.d/athena_led package/luci-app
 git clone --depth=1 https://github.com/asvow/luci-app-tailscale feeds/packages/luci-app-tailscale
 
 
-tailscale_path="$BUILD_DIR/feeds/packages/luci-app-tailscale/root/usr/share/luci/menu.d/luci-app-tailscale.json"
-if [ -d "$(dirname "$tailscale_path")" ] && [ -f "$tailscale_path" ]; then
-    echo "tailscale $tailscale_path menu has been fixed!"
-    sed -i 's/vpn/services/g' "$tailscale_path"
+#修复TailScale配置文件冲突
+TS_FILE=$(find feeds/packages/ -maxdepth 3 -type f -wholename "*/tailscale/Makefile")
+if [ -f "$TS_FILE" ]; then
+	echo " "
+
+	sed -i '/\/files/d' $TS_FILE
+	echo "tailscale $TS_FILE has been fixed!"
+
+    tailscale_path="$BUILD_DIR/feeds/packages/luci-app-tailscale/root/usr/share/luci/menu.d/luci-app-tailscale.json"
+    if [ -d "$(dirname "$tailscale_path")" ] && [ -f "$tailscale_path" ]; then
+        echo "tailscale $tailscale_path menu has been fixed!"
+        sed -i 's/vpn/services/g' "$tailscale_path"
+    fi
 fi
+
 
 ### PassWall & OpenClash ###
 
