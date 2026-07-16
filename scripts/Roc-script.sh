@@ -159,17 +159,17 @@ git clone --depth=1 https://github.com/vernesong/OpenClash package/luci-app-open
 # 清理 PassWall 的 chnlist 规则文件
 echo "baidu.com"  > package/luci-app-passwall/luci-app-passwall/root/usr/share/passwall/rules/chnlist
 
-./scripts/feeds update -i -a
-./scripts/feeds install -a
+#./scripts/feeds update -i -a
+#./scripts/feeds install -a
 
-#./scripts/feeds update -i
-#for dir in $BUILD_DIR/feeds/*; do
-#    if [ -d "$dir" ] && [[ ! "$dir" == *.tmp ]] && [[ ! "$dir" == *.index ]] && [[ ! "$dir" == *.targetindex ]]; then
-#        if [[ $(basename "$dir") == "small8" ]]; then
+./scripts/feeds update -i
+for dir in $BUILD_DIR/feeds/*; do
+    if [ -d "$dir" ] && [[ ! "$dir" == *.tmp ]] && [[ ! "$dir" == *.index ]] && [[ ! "$dir" == *.targetindex ]]; then
+        if [[ $(basename "$dir") == "small8" ]]; then
 #            :
-##            ./scripts/feeds install -p small8 -f luci-i18n-quickstart-zh-cn quickstart luci-app-quickstart
-#        else
-#            ./scripts/feeds install -f -ap $(basename "$dir")
-#        fi
-#    fi
-#done
+            ./scripts/feeds install -p small8 -f luci-i18n-quickstart-zh-cn quickstart luci-app-quickstart
+        else
+            ./scripts/feeds install -f -ap $(basename "$dir")
+        fi
+    fi
+done
