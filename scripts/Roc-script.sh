@@ -27,7 +27,7 @@ update_feeds() {
 
 update_feeds
 
-
+feeds_pkg="feeds/small8"
 
 # 修改默认IP & 固件名称 & 编译署名和时间
 sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generate
@@ -127,20 +127,45 @@ chmod +x package/luci-app-athena-led/root/etc/init.d/athena_led package/luci-app
 git clone --depth=1 https://github.com/asvow/luci-app-tailscale feeds/packages/luci-app-tailscale
 
 
+tailscale_path="feeds/packages/luci-app-tailscale/root/usr/share/luci/menu.d/luci-app-tailscale.json"
+if [ -f "$tailscale_path" ]; then
+    echo "tailscale $tailscale_path menu has been fixed!"
+    sed -i 's/vpn/services/g' "$tailscale_path"
+fi
+
 #修复TailScale配置文件冲突
 TS_FILE=$(find feeds/packages/ -maxdepth 3 -type f -wholename "*/tailscale/Makefile")
 if [ -f "$TS_FILE" ]; then
-	echo " "
-
 	sed -i '/\/files/d' $TS_FILE
 	echo "tailscale $TS_FILE has been fixed!"
-
-    tailscale_path="$BUILD_DIR/feeds/packages/luci-app-tailscale/root/usr/share/luci/menu.d/luci-app-tailscale.json"
-    if [ -d "$(dirname "$tailscale_path")" ] && [ -f "$tailscale_path" ]; then
-        echo "tailscale $tailscale_path menu has been fixed!"
-        sed -i 's/vpn/services/g' "$tailscale_path"
-    fi
 fi
+
+
+fix_quickstart() {
+    local file_path="$feeds_pkg/luci-app-quickstart/luasrc/controller/istore_backend.lua"
+    local makefile_path="$feeds_pkg/quickstart/Makefile"
+    local url="https://gist.githubusercontent.com/puteulanus/1c180fae6bccd25e57eb6d30b7aa28aa/raw/istore_backend.lua"
+    if [ -f "$file_path" ]; then
+        echo "正在修复 quickstart..."
+        curl -fsSL -o "$file_path" "$url"
+        if [ $? -ne 0 ]; then
+            echo "错误：从 $url 下载 istore_backend.lua 失败" >&2
+            exit 1
+        fi
+    fi
+
+    if [ -f "$makefile_path" ]; then
+        echo "正在移除 quickstart 非必要存储依赖..."
+        sed -i \
+            -e '/^[[:space:]]*DEPENDS:=/,/^[[:space:]]*URL:=/ s/[[:space:]]*+smartmontools-drivedb//g' \
+            -e '/^[[:space:]]*DEPENDS:=/,/^[[:space:]]*URL:=/ s/[[:space:]]*+smartmontools//g' \
+            -e '/^[[:space:]]*DEPENDS:=/,/^[[:space:]]*URL:=/ s/[[:space:]]*+smartd//g' \
+            -e '/^[[:space:]]*DEPENDS:=/,/^[[:space:]]*URL:=/ s/[[:space:]]*+mdadm//g' \
+            -e '/^[[:space:]]*DEPENDS:=/,/^[[:space:]]*URL:=/ s/[[:space:]]*+parted//g' \
+            -e '/^[[:space:]]*DEPENDS:=/,/^[[:space:]]*URL:=/ s/[[:space:]]*+e2fsprogs//g' \
+            "$makefile_path"
+    fi
+}
 
 
 ### PassWall & OpenClash ###
@@ -167,7 +192,7 @@ for dir in $BUILD_DIR/feeds/*; do
     if [ -d "$dir" ] && [[ ! "$dir" == *.tmp ]] && [[ ! "$dir" == *.index ]] && [[ ! "$dir" == *.targetindex ]]; then
         if [[ $(basename "$dir") == "small8" ]]; then
 #            :
-            ./scripts/feeds install -p small8 -f luci-i18n-quickstart-zh-cn quickstart luci-app-quickstart
+            ./scripts/feeds install -p small8 -f quickstart luci-app-quickstart
         else
             ./scripts/feeds install -f -ap $(basename "$dir")
         fi
