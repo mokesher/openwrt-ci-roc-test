@@ -142,11 +142,10 @@ fi
 
 
 fix_quickstart() {
-#    local file_path="$feeds_pkg/luci-app-quickstart/luasrc/controller/istore_backend.lua"
-    local makefile_path="$feeds_pkg/quickstart/Makefile"
-#    local url="https://gist.githubusercontent.com/puteulanus/1c180fae6bccd25e57eb6d30b7aa28aa/raw/istore_backend.lua"
-    local file_path="$feeds_pkg/luci-app-quickstart/luasrc/controller/quickstart.lua"
-    local url="https://raw.githubusercontent.com/mokesher/luci-app-quickstart/refs/heads/main/luasrc/controller/quickstart.lua"
+    local file_path="$feeds_pkg/luci-app-quickstart/luasrc/controller/istore_backend.lua"
+    local url="https://gist.githubusercontent.com/puteulanus/1c180fae6bccd25e57eb6d30b7aa28aa/raw/istore_backend.lua"
+#    local file_path="$feeds_pkg/luci-app-quickstart/luasrc/controller/quickstart.lua"
+#    local url="https://raw.githubusercontent.com/mokesher/luci-app-quickstart/refs/heads/main/luasrc/controller/quickstart.lua"
     if [ -f "$file_path" ]; then
         echo "正在修复 quickstart..."
         curl -fsSL -o "$file_path" "$url"
@@ -156,6 +155,8 @@ fix_quickstart() {
         fi
     fi
 
+
+    local makefile_path="$feeds_pkg/quickstart/Makefile"
     if [ -f "$makefile_path" ]; then
         echo "正在移除 quickstart 非必要存储依赖..."
         sed -i \
