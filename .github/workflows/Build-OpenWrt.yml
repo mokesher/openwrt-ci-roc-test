@@ -279,13 +279,13 @@ jobs:
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        gh cache list --key "${CACHE_PREFIX}-" --json key --jq '.[].key' |
-          while read -r key; do
-            [ -n "$key" ] || continue
-            if [ "$key" != "$CACHE_KEY" ]; then
-              gh cache delete "$key" || true
-            fi
+        gh cache list --key "${CACHE_PREFIX}-" --json id --jq '.[5:] | .[].id' |
+          while read -r cache_id; do
+            [ -n "$cache_id" ] || continue
+            echo "Deleting old cache: $cache_id"
+            gh cache delete "$cache_id" || true
           done
+
         echo "========cache status========"
         if [ -d "$OPENWRT_PATH/.ccache" ]; then
           echo "ccache: $(du -sh "$OPENWRT_PATH/.ccache" | cut -f 1)"
@@ -293,6 +293,21 @@ jobs:
         if [ -d "$OPENWRT_PATH/staging_dir" ]; then
           echo "staging: $(du -sh "$OPENWRT_PATH/staging_dir" | cut -f 1)"
         fi
+#
+#        gh cache list --key "${CACHE_PREFIX}-" --json key --jq '.[].key' |
+#          while read -r key; do
+#            [ -n "$key" ] || continue
+#            if [ "$key" != "$CACHE_KEY" ]; then
+#              gh cache delete "$key" || true
+#            fi
+#          done
+#        echo "========cache status========"
+#        if [ -d "$OPENWRT_PATH/.ccache" ]; then
+#          echo "ccache: $(du -sh "$OPENWRT_PATH/.ccache" | cut -f 1)"
+#        fi
+#        if [ -d "$OPENWRT_PATH/staging_dir" ]; then
+#          echo "staging: $(du -sh "$OPENWRT_PATH/staging_dir" | cut -f 1)"
+#        fi
 
 #    - name: Delete Old Workflows(删除旧工作流)
 #      if: ${{ inputs.delete_old_workflows }}
