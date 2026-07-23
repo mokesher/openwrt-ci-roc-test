@@ -2,6 +2,12 @@ name: Trigger-All-Workflows
 
 on:
   workflow_dispatch:
+    inputs:
+      ipq60xx_libwrt:
+        description: 运行 IPQ60XX-LibWrt
+        required: false
+        type: boolean
+        default: true
   schedule:
     - cron: "0 18 * * 5"
 
@@ -11,6 +17,7 @@ permissions:
 
 jobs:
     IPQ60XX-LibWrt:
+      if: ${{ github.event_name == 'schedule' || inputs.ipq60xx_libwrt }}
       uses: ./.github/workflows/IPQ60XX-LibWrt.yml
       permissions:
         contents: write
