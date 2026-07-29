@@ -94,7 +94,7 @@ function git_sparse_clone() {
   rm -rf "$repodir"
 }
 
-# Aria2 & nginx & Go & DDNS & frp & UPnP & Wol & Argon & Aurora & OpenList & Lucky & wechatpush & OpenAppFilter & 集客无线AC控制器 & 雅典娜LED控制
+# Aria2 & nginx & Go & DDNS & frp & UPnP & Wol & Aurora & OpenList & Lucky & wechatpush & OpenAppFilter & 集客无线AC控制器 & 雅典娜LED控制
 git_sparse_clone aria2 https://github.com/laipeng668/packages net/aria2
 mv -f package/aria2 feeds/packages/net/aria2
 git_sparse_clone nginx https://github.com/laipeng668/packages net/nginx
@@ -118,8 +118,6 @@ git_sparse_clone master https://github.com/immortalwrt/luci applications/luci-ap
 mv -f package/luci-app-upnp feeds/luci/applications/luci-app-upnp
 git_sparse_clone master https://github.com/immortalwrt/luci applications/luci-app-wol
 mv -f package/luci-app-wol feeds/luci/applications/luci-app-wol
-git clone --depth=1 https://github.com/jerrykuku/luci-theme-argon feeds/luci/themes/luci-theme-argon
-git clone --depth=1 https://github.com/jerrykuku/luci-app-argon-config feeds/luci/applications/luci-app-argon-config
 git clone --depth=1 https://github.com/eamonxg/luci-theme-aurora feeds/luci/themes/luci-theme-aurora
 git clone --depth=1 https://github.com/eamonxg/luci-app-aurora-config feeds/luci/applications/luci-app-aurora-config
 git clone --depth=1 https://github.com/laipeng668/luci-app-openlist2 package/openlist2
@@ -131,6 +129,7 @@ git clone --depth=1 https://github.com/NONGFAH/luci-app-athena-led package/luci-
 chmod +x package/luci-app-athena-led/root/etc/init.d/athena_led package/luci-app-athena-led/root/usr/sbin/athena-led
 
 git clone --depth=1 https://github.com/asvow/luci-app-tailscale feeds/packages/luci-app-tailscale
+git clone --depth=1 https://github.com/hxzlplp7/luci-app-dashboard feeds/packages/luci-app-dashboard
 
 
 tailscale_path="feeds/packages/luci-app-tailscale/root/usr/share/luci/menu.d/luci-app-tailscale.json"
@@ -150,8 +149,7 @@ fi
 fix_quickstart() {
     local file_path="$feeds_pkg/luci-app-quickstart/luasrc/controller/istore_backend.lua"
     local url="https://gist.githubusercontent.com/puteulanus/1c180fae6bccd25e57eb6d30b7aa28aa/raw/istore_backend.lua"
-#    local file_path="$feeds_pkg/luci-app-quickstart/luasrc/controller/quickstart.lua"
-#    local url="https://raw.githubusercontent.com/mokesher/luci-app-quickstart/refs/heads/main/luasrc/controller/quickstart.lua"
+
     if [ -f "$file_path" ]; then
         echo "正在修复 quickstart..."
         curl -fsSL -o "$file_path" "$url"
@@ -176,6 +174,11 @@ fix_quickstart() {
     fi
 }
 
+
+# Aurora Light
+aurora_light_file="feeds/luci/themes/luci-theme-aurora/ucode/template/themes/aurora/header.ut"
+sed -i "s/|| 'device'/|| 'light'/g" $aurora_light_file
+grep -n "|| 'light"  $aurora_light_file
 
 ### PassWall & OpenClash ###
 
