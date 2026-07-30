@@ -147,19 +147,6 @@ fi
 
 
 fix_quickstart() {
-    local file_path="$feeds_pkg/luci-app-quickstart/luasrc/controller/istore_backend.lua"
-    local url="https://gist.githubusercontent.com/puteulanus/1c180fae6bccd25e57eb6d30b7aa28aa/raw/istore_backend.lua"
-
-    if [ -f "$file_path" ]; then
-        echo "正在修复 quickstart..."
-        curl -fsSL -o "$file_path" "$url"
-        if [ $? -ne 0 ]; then
-            echo "错误：从 $url 下载 istore_backend.lua 失败" >&2
-            exit 1
-        fi
-    fi
-
-
     local makefile_path="$feeds_pkg/quickstart/Makefile"
     if [ -f "$makefile_path" ]; then
         echo "正在移除 quickstart 非必要存储依赖..."
