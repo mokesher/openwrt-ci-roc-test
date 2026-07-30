@@ -129,7 +129,7 @@ git clone --depth=1 https://github.com/NONGFAH/luci-app-athena-led package/luci-
 chmod +x package/luci-app-athena-led/root/etc/init.d/athena_led package/luci-app-athena-led/root/usr/sbin/athena-led
 
 git clone --depth=1 https://github.com/asvow/luci-app-tailscale feeds/packages/luci-app-tailscale
-git clone --depth=1 https://github.com/hxzlplp7/luci-app-dashboard feeds/packages/luci-app-dashboard
+git clone --depth=1 https://github.com/mokesher/luci-app-dashboard feeds/packages/luci-app-dashboard
 
 
 tailscale_path="feeds/packages/luci-app-tailscale/root/usr/share/luci/menu.d/luci-app-tailscale.json"
@@ -168,6 +168,8 @@ sed -i "s/? theme : 'device'/? theme : 'light'/g" $aurora_light_file
 sed -i "s/|| 'device'/|| 'light'/g" $aurora_light_file
 sed -i 's/content="light dark"/content="light"/g' $aurora_light_file
 grep -n "|| 'light"  $aurora_light_file
+
+
 
 ### PassWall & OpenClash ###
 
