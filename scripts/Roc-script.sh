@@ -164,9 +164,7 @@ fix_quickstart() {
 
 # Aurora Light
 aurora_light_file="feeds/luci/themes/luci-theme-aurora/ucode/template/themes/aurora/header.ut"
-sed -i "s/? theme : 'device'/? theme : 'light'/g" $aurora_light_file
 sed -i "s/|| 'device'/|| 'light'/g" $aurora_light_file
-sed -i 's/content="light dark"/content="light"/g' $aurora_light_file
 grep -n "|| 'light"  $aurora_light_file
 
 
