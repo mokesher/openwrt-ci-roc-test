@@ -138,7 +138,7 @@ if [ -f "$tailscale_path" ]; then
     sed -i 's/vpn/services/g' "$tailscale_path"
 fi
 
-samba_path=$(find feeds/ -type f -wholename "luci-app-samba4.json")
+samba_path=$(find feeds/ -type f -name "luci-app-samba4.json")
 echo $samba_path
 if [ -f "$samba_path" ]; then
 	sed -i 's/vpn/services/g' "$samba_path"
