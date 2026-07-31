@@ -172,14 +172,10 @@ grep -n "|| 'light"  $aurora_light_file
 
 
 # uci 99-default-settings
-sed -i 's|echo "log-facility=/dev/null" >> /etc/dnsmasq.conf$|sed -i '\''/log-facility/d'\'' /etc/dnsmasq.conf|' feeds/small8/my-default-settings/files/etc/uci-defaults/99-default-settings
-grep -r "log-facility" feeds/small8/my-default-settings/files/etc/uci-defaults/99-default-settings
-
-sed -i '/echo "log-facility=\/dev\/null" >> \/etc\/dnsmasq.conf/d' feeds/small8/lean/default-settings/files/zzz-default-settings
-
-cat feeds/small8/lean/default-settings/files/zzz-default-settings
-
-grep -r "log-facility" * | grep echo
+#sed -i 's|echo "log-facility=/dev/null" >> /etc/dnsmasq.conf$|sed -i '\''/log-facility/d'\'' /etc/dnsmasq.conf|' feeds/small8/my-default-settings/files/etc/uci-defaults/99-default-settings
+#grep -r "log-facility" feeds/small8/my-default-settings/files/etc/uci-defaults/99-default-settings
+#
+#sed -i '/echo "log-facility=\/dev\/null" >> \/etc\/dnsmasq.conf/d' feeds/small8/lean/default-settings/files/zzz-default-settings
 
 
 
