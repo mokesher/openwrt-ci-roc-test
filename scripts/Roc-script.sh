@@ -167,7 +167,10 @@ aurora_light_file="feeds/luci/themes/luci-theme-aurora/ucode/template/themes/aur
 sed -i "s/? theme : 'device'/? theme : 'light'/g" $aurora_light_file
 sed -i "s/|| 'device'/|| 'light'/g" $aurora_light_file
 sed -i 's/content="light dark"/content="light"/g' $aurora_light_file
+echo "Aurora Light sed success"
 grep -n "|| 'light"  $aurora_light_file
+
+find ./ -name "dnsmasq.conf" 2>/dev/null | xargs -I {} sh -c 'echo "=== {} ==="; cat "{}"'
 
 
 
