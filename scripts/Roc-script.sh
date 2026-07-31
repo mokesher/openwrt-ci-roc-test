@@ -170,8 +170,11 @@ sed -i 's/content="light dark"/content="light"/g' $aurora_light_file
 echo "Aurora Light sed success"
 grep -n "|| 'light"  $aurora_light_file
 
-find ./ -name "dnsmasq.conf" 2>/dev/null | xargs -I {} sh -c 'echo "=== {} ==="; cat "{}"'
 
+# uci 99-default-settings
+sed -i 's|echo "log-facility=/dev/null" >> /etc/dnsmasq.conf$|sed -i '\''/log-facility/d'\'' /etc/dnsmasq.conf|' feeds/small8/my-default-settings/files/etc/uci-defaults/99-default-settings
+
+grep -r "log-facility" feeds/small8/my-default-settings/files/etc/uci-defaults/99-default-settings
 
 
 ### PassWall & OpenClash ###
