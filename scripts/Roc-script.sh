@@ -177,6 +177,10 @@ grep -r "log-facility" feeds/small8/my-default-settings/files/etc/uci-defaults/9
 
 sed -i '/echo "log-facility=\/dev\/null" >> \/etc\/dnsmasq.conf/d' feeds/small8/lean/default-settings/files/zzz-default-settings
 
+cat feeds/small8/lean/default-settings/files/zzz-default-settings
+
+grep -r "log-facility" * | grep echo
+
 
 
 ### PassWall & OpenClash ###
