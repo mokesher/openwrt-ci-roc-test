@@ -142,6 +142,8 @@ samba_path=$(find feeds/ -type f -wholename "luci-app-samba4.json")
 echo $samba_path
 if [ -f "$samba_path" ]; then
 	sed -i 's/vpn/services/g' "$samba_path"
+	echo "samba menu.d $samba_path has been fixed!"
+	cat $samba_path
 fi
 
 
