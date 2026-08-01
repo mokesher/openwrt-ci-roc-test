@@ -140,7 +140,7 @@ fi
 
 samba_path="feeds/luci/applications/luci-app-samba4/root/usr/share/luci/menu.d/luci-app-samba4.json"
 if [ -f "$samba_path" ]; then
-	sed -i 's/vpn/services/g' "$samba_path"
+	sed -i 's/nas/services/g' "$samba_path"
 	echo "samba menu.d $samba_path has been fixed!"
 fi
 
