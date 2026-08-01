@@ -144,6 +144,15 @@ if [ -f "$samba_path" ]; then
 	echo "samba menu.d $samba_path has been fixed!"
 fi
 
+TS_FILE=$(find feeds/ -type f -name "luci-app-hd-idle.json")
+echo $TS_FILE
+
+hd_path="feeds/luci/applications/luci-app-hd-idle/root/usr/share/luci/menu.d/luci-app-hd-idle.json"
+if [ -f "$hd_path" ]; then
+	sed -i 's/nas/services/g' "$hd_path"
+	echo "hd menu.d $hd_path has been fixed!"
+fi
+
 
 #修复TailScale配置文件冲突
 TS_FILE=$(find feeds/packages/ -maxdepth 3 -type f -wholename "*/tailscale/Makefile")
