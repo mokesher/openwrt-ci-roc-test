@@ -43,10 +43,6 @@ on:
         required: false
         type: string
         default: apk
-      keep_latest_releases:
-        required: false
-        type: number
-        default: 5
 
 permissions:
   contents: read
@@ -379,6 +375,8 @@ jobs:
       with:
         name: ${{ inputs.firmware_tag }} - ${{ env.FILE_DATE }}
         allowUpdates: true
+        replacesArtifacts: true
+        artifactErrorsFailBuild: true
         tag: ${{ inputs.firmware_tag }}-${{ env.FILE_DATE }}
         token: ${{ github.token }}
         artifacts: artifacts/firmware/*
@@ -407,64 +405,55 @@ jobs:
       actions: write
 
     steps:
-    - name: Delete Old Releases(删除旧版本，保留最新指定个数)
-      if: steps.compile.outputs.status == 'success'
-      env:
-        GH_TOKEN: ${{ github.token }}
-        FIRMWARE_TAG: ${{ inputs.firmware_tag }}
-        KEEP_LATEST: ${{ inputs.keep_latest_releases }}
-      run: |
-        # 获取所有匹配 tag 前缀的 releases（按创建时间倒序）
-        releases_json=$(gh release list --limit 100 --json tagName,createdAt,name --jq '[.[] | select(.tagName | startswith("'"$FIRMWARE_TAG"'"))] | sort_by(.createdAt) | reverse')
-
-        # 计数并删除超过保留个数的旧版本
-        total=$(echo "$releases_json" | jq 'length')
-        echo "Found $total releases matching $FIRMWARE_TAG*"
-        echo "Keep latest $KEEP_LATEST releases"
-
-        if [ "$total" -gt "$KEEP_LATEST" ]; then
-          echo "$releases_json" | jq -r --argjson keep "$KEEP_LATEST" '.[$keep:] | .[] | "\(.tagName)\t\(.name)"' |
-            while IFS=$'\t' read -r tag name; do
-              [ -z "$tag" ] && continue
-              echo "Deleting old release: $tag ($name)"
-              gh release delete "$tag" --yes || true
-            done
-          echo "Kept $KEEP_LATEST latest releases, deleted $((total - KEEP_LATEST)) old releases"
-        else
-          echo "Only $total releases found, no cleanup needed (keeping all)"
-        fi
-
     - name: Delete Old Cache(删除旧缓存)
       env:
         CCACHE_KEY: ${{ needs.Build.outputs.ccache_key }}
         GH_TOKEN: ${{ github.token }}
         STAGING_KEY: ${{ needs.Build.outputs.staging_key }}
       run: |
-        gh cache list --key "${CACHE_PREFIX}-" --json id --jq '.[5:] | .[].id' |
-          while read -r cache_id; do
-            [ -n "$cache_id" ] || continue
-            echo "Deleting old cache: $cache_id"
-            gh cache delete "$cache_id" || true
-          done
+        delete_old_cache_versions() {
+          local cache_id
+          local cache_key
+          local cache_list_file
+          local current_key="$1"
+          local current_created_at
+          local key_prefix="${current_key%-*}"
+          key_prefix="${key_prefix%-*}-"
 
-        echo "========cache status========"
-        if [ -d "$OPENWRT_PATH/.ccache" ]; then
-          echo "ccache: $(du -sh "$OPENWRT_PATH/.ccache" | cut -f 1)"
-        fi
-        if [ -d "$OPENWRT_PATH/staging_dir" ]; then
-          echo "staging: $(du -sh "$OPENWRT_PATH/staging_dir" | cut -f 1)"
-        fi
+          cache_list_file="$(mktemp "$RUNNER_TEMP/openwrt-cache-list.XXXXXX.json")"
+          gh cache list --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF" --key "$key_prefix" --limit 10000 --sort created_at --order desc --json id,key,createdAt > "$cache_list_file"
+          current_created_at="$(jq -r --arg key "$current_key" '[.[] | select(.key == $key) | .createdAt] | first // empty' "$cache_list_file")"
+          if [ -z "$current_created_at" ]; then
+            echo "::warning::Current cache was not found; skip cleanup for $current_key."
+            rm -f "$cache_list_file"
+            return 0
+          fi
+
+          jq -r --arg key "$current_key" --arg created_at "$current_created_at" \
+            '.[] | select(.key != $key and .createdAt < $created_at) | [.id, .key] | @tsv' "$cache_list_file" |
+            while IFS=$'\t' read -r cache_id cache_key; do
+              [ -n "$cache_id" ] || continue
+              gh cache delete --repo "$GITHUB_REPOSITORY" "$cache_id" || echo "::warning::Unable to delete cache $cache_key ($cache_id)."
+            done
+          rm -f "$cache_list_file"
+        }
+
+        delete_old_cache_versions "$CCACHE_KEY"
+        delete_old_cache_versions "$STAGING_KEY"
 
     - name: Delete Old Workflows(删除旧工作流)
       if: ${{ inputs.delete_old_workflows }}
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        cutoff="$(date -u -d '2 days ago' +%s)"
-        gh run list --limit 100 --json databaseId,createdAt,status --jq '.[] | select(.status != "in_progress" and .status != "queued") | [.databaseId, .createdAt] | @tsv' |
-          while IFS=$'\t' read -r run_id created_at; do
-            run_ts="$(date -u -d "$created_at" +%s)"
-            if [ "$run_ts" -lt "$cutoff" ]; then
-              gh run delete "$run_id"
-            fi
-          done
+        cutoff="$(date -u -d '2 days ago' +'%Y-%m-%dT%H:%M:%SZ')"
+        run_ids_file="$RUNNER_TEMP/old-workflow-run-ids.txt"
+        gh api --method GET --paginate "/repos/$GITHUB_REPOSITORY/actions/runs" \
+          -f status=completed \
+          -f "created=<$cutoff" \
+          -F per_page=100 \
+          --jq '.workflow_runs[].id' > "$run_ids_file"
+        while read -r run_id; do
+          [ -n "$run_id" ] || continue
+          gh run delete --repo "$GITHUB_REPOSITORY" "$run_id" || echo "::warning::Unable to delete workflow run $run_id."
+        done < "$run_ids_file"
