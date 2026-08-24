@@ -295,6 +295,8 @@ jobs:
         cd "$OPENWRT_PATH"
         echo -e "$(nproc) thread compile"
         make -j"$(nproc)" || make -j1 V=s
+        echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >> "$GITHUB_ENV"
+        echo "FILE_DATE=$(date +"%Y.%m.%d")" >> "$GITHUB_ENV"
 
     - name: Check Space Usage(检查空间使用情况)
       if: (!cancelled())
@@ -362,6 +364,8 @@ jobs:
     concurrency:
       group: openwrt-release-${{ github.repository }}-${{ inputs.artifact_prefix }}
       cancel-in-progress: false
+    env:
+      TZ: Asia/Shanghai
 
     steps:
     - name: Download Firmware Artifact(下载固件产物)
@@ -369,6 +373,11 @@ jobs:
       with:
         name: ${{ needs.Build.outputs.artifact_name }}
         path: artifacts/firmware
+
+    - name: Set Release Date(设置发布日期)
+      run: |
+        sudo timedatectl set-timezone "$TZ" 2>/dev/null || true
+        echo "FILE_DATE=$(date +"%Y.%m.%d")" >> "$GITHUB_ENV"
 
     - name: Upload Firmware To Release(发布固件)
       uses: ncipollo/release-action@v1
