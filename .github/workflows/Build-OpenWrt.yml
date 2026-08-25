@@ -424,8 +424,9 @@ jobs:
         FIRMWARE_TAG: ${{ inputs.firmware_tag }}
         KEEP_LATEST: ${{ inputs.keep_latest_releases }}
       run: |
+        # Cleanup job 未检出代码，gh 命令需显式指定 repo，避免探测当前目录的 git 仓库
         # 获取所有匹配 tag 前缀的 releases（按创建时间倒序）
-        releases_json=$(gh release list --limit 100 --json tagName,createdAt,name --jq '[.[] | select(.tagName | startswith("'"$FIRMWARE_TAG"'"))] | sort_by(.createdAt) | reverse')
+        releases_json=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 100 --json tagName,createdAt,name --jq '[.[] | select(.tagName | startswith("'"$FIRMWARE_TAG"'"))] | sort_by(.createdAt) | reverse')
 
         total=$(echo "$releases_json" | jq 'length')
         echo "Found $total releases matching $FIRMWARE_TAG*"
@@ -436,7 +437,7 @@ jobs:
             while IFS=$'\t' read -r tag name; do
               [ -z "$tag" ] && continue
               echo "Deleting old release: $tag ($name)"
-              gh release delete "$tag" --yes || echo "::warning::Unable to delete release $tag."
+              gh release delete --repo "$GITHUB_REPOSITORY" "$tag" --yes || echo "::warning::Unable to delete release $tag."
             done
           echo "Kept $KEEP_LATEST latest releases, deleted $((total - KEEP_LATEST)) old releases"
         else
