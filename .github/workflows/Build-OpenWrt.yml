@@ -43,6 +43,10 @@ on:
         required: false
         type: string
         default: apk
+      keep_latest_releases:
+        required: false
+        type: number
+        default: 3
 
 permissions:
   contents: read
@@ -410,10 +414,35 @@ jobs:
       - Release
     if: ${{ !cancelled() && needs.Build.result == 'success' && needs.Release.result == 'success' }}
     permissions:
-      contents: read
+      contents: write
       actions: write
 
     steps:
+    - name: Delete Old Releases(删除旧版本，保留最新指定个数)
+      env:
+        GH_TOKEN: ${{ github.token }}
+        FIRMWARE_TAG: ${{ inputs.firmware_tag }}
+        KEEP_LATEST: ${{ inputs.keep_latest_releases }}
+      run: |
+        # 获取所有匹配 tag 前缀的 releases（按创建时间倒序）
+        releases_json=$(gh release list --limit 100 --json tagName,createdAt,name --jq '[.[] | select(.tagName | startswith("'"$FIRMWARE_TAG"'"))] | sort_by(.createdAt) | reverse')
+
+        total=$(echo "$releases_json" | jq 'length')
+        echo "Found $total releases matching $FIRMWARE_TAG*"
+        echo "Keep latest $KEEP_LATEST releases"
+
+        if [ "$total" -gt "$KEEP_LATEST" ]; then
+          echo "$releases_json" | jq -r --argjson keep "$KEEP_LATEST" '.[$keep:] | .[] | "\(.tagName)\t\(.name)"' |
+            while IFS=$'\t' read -r tag name; do
+              [ -z "$tag" ] && continue
+              echo "Deleting old release: $tag ($name)"
+              gh release delete "$tag" --yes || echo "::warning::Unable to delete release $tag."
+            done
+          echo "Kept $KEEP_LATEST latest releases, deleted $((total - KEEP_LATEST)) old releases"
+        else
+          echo "Only $total releases found, no cleanup needed (keeping all)"
+        fi
+
     - name: Delete Old Cache(删除旧缓存)
       env:
         CCACHE_KEY: ${{ needs.Build.outputs.ccache_key }}
