@@ -342,6 +342,8 @@ fi
 git clone --depth=1 https://github.com/asvow/luci-app-tailscale feeds/packages/luci-app-tailscale
 git clone --depth=1 https://github.com/mokesher/luci-app-dashboard feeds/packages/luci-app-dashboard
 
+rm -rf feeds/packages/net/tailscale
+git clone --depth=1 https://github.com/mokesher/tailscale feeds/packages/net/tailscale
 
 tailscale_path="feeds/packages/luci-app-tailscale/root/usr/share/luci/menu.d/luci-app-tailscale.json"
 if [ -f "$tailscale_path" ]; then
