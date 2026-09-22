@@ -341,23 +341,6 @@ fi
 
 git clone --depth=1 https://github.com/mokesher/luci-app-dashboard feeds/packages/luci-app-dashboard
 
-#rm -rf feeds/packages/net/tailscale
-#git clone --depth=1 https://github.com/mokesher/tailscale feeds/packages/net/tailscale
-
-
-rm -rf feeds/packages/net/tailscale
-git_sparse_clone master https://github.com/laipeng668/packages net/tailscale
-mv package/tailscale feeds/packages/net/tailscale
-
-rm -rf feeds/packages/luci-app-tailscale
-git_sparse_clone master https://github.com/tokisaki-galaxy/luci-app-tailscale-community luci-app-tailscale-community
-mv package/luci-app-tailscale-community feeds/packages/luci-app-tailscale-community
-
-tailscale_path="feeds/packages/luci-app-tailscale/root/usr/share/luci/menu.d/luci-app-tailscale-community.json"
-if [ -f "$tailscale_path" ]; then
-    echo "tailscale $tailscale_path menu has been fixed!"
-    sed -i 's/vpn/services/g' "$tailscale_path"
-fi
 
 samba_path="feeds/luci/applications/luci-app-samba4/root/usr/share/luci/menu.d/luci-app-samba4.json"
 if [ -f "$samba_path" ]; then
@@ -375,13 +358,32 @@ if [ -f "$hd_path" ]; then
 fi
 
 
-#修复TailScale配置文件冲突
-TS_FILE=$(find feeds/packages/ -maxdepth 3 -type f -wholename "*/tailscale/Makefile")
-if [ -f "$TS_FILE" ]; then
-	sed -i '/\/files/d' $TS_FILE
-	echo "tailscale $TS_FILE has been fixed!"
-fi
 
+fix_tailscale() {
+  rm -rf feeds/packages/net/tailscale
+  git_sparse_clone master https://github.com/laipeng668/packages net/tailscale
+  mv package/tailscale feeds/packages/net/tailscale
+
+  rm -rf feeds/packages/luci-app-tailscale
+  git_sparse_clone master https://github.com/tokisaki-galaxy/luci-app-tailscale-community luci-app-tailscale-community
+  mv package/luci-app-tailscale-community feeds/packages/luci-app-tailscale-community
+
+  tailscale_path="feeds/packages/luci-app-tailscale/root/usr/share/luci/menu.d/luci-app-tailscale-community.json"
+  if [ -f "$tailscale_path" ]; then
+      echo "tailscale $tailscale_path menu has been fixed!"
+      sed -i 's/vpn/services/g' "$tailscale_path"
+  fi
+
+#  #修复TailScale配置文件冲突
+#  TS_FILE=$(find feeds/packages/ -maxdepth 3 -type f -wholename "*/tailscale/Makefile")
+#  if [ -f "$TS_FILE" ]; then
+#    sed -i '/\/files/d' $TS_FILE
+#    echo "tailscale $TS_FILE has been fixed!"
+#  fi
+
+}
+
+fix_tailscale
 
 fix_quickstart() {
     local makefile_path="$feeds_pkg/quickstart/Makefile"
