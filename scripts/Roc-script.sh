@@ -339,7 +339,6 @@ if package_enabled luci-app-athena-led luci-i18n-athena-led-zh-cn; then
   chmod +x package/luci-app-athena-led/root/etc/init.d/athena_led package/luci-app-athena-led/root/usr/sbin/athena-led
 fi
 
-git clone --depth=1 https://github.com/asvow/luci-app-tailscale feeds/packages/luci-app-tailscale
 git clone --depth=1 https://github.com/mokesher/luci-app-dashboard feeds/packages/luci-app-dashboard
 
 #rm -rf feeds/packages/net/tailscale
@@ -350,7 +349,11 @@ rm -rf feeds/packages/net/tailscale
 git_sparse_clone master https://github.com/laipeng668/packages net/tailscale
 mv package/tailscale feeds/packages/net/tailscale
 
-tailscale_path="feeds/packages/luci-app-tailscale/root/usr/share/luci/menu.d/luci-app-tailscale.json"
+rm -rf feeds/packages/luci-app-tailscale
+git_sparse_clone master https://github.com/tokisaki-galaxy/luci-app-tailscale-community luci-app-tailscale-community
+mv package/luci-app-tailscale-community feeds/packages/luci-app-tailscale-community
+
+tailscale_path="feeds/packages/luci-app-tailscale/root/usr/share/luci/menu.d/luci-app-tailscale-community.json"
 if [ -f "$tailscale_path" ]; then
     echo "tailscale $tailscale_path menu has been fixed!"
     sed -i 's/vpn/services/g' "$tailscale_path"
