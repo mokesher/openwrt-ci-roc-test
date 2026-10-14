@@ -426,21 +426,33 @@ jobs:
         KEEP_LATEST: ${{ inputs.keep_latest_releases }}
       run: |
         # Cleanup job 未检出代码，gh 命令需显式指定 repo，避免探测当前目录的 git 仓库
-        # 获取所有匹配 tag 前缀的 releases（按创建时间倒序）
-        releases_json=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 100 --json tagName,createdAt,name --jq '[.[] | select(.tagName | startswith("'"$FIRMWARE_TAG"'"))] | sort_by(.createdAt) | reverse')
+        # 本次运行刚发布的 tag，任何情况下都不删除
+        current_tag="${FIRMWARE_TAG}-$(date +'%Y.%m.%d')"
 
-        total=$(echo "$releases_json" | jq 'length')
+        # tag 形如 <平台>-YYYY.MM.DD，按 tag 名倒序即按时间倒序（最新在前）；
+        # 排序交给系统 jq 处理，不依赖 gh 返回的时间字段
+        releases_json=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 100 --json tagName,name)
+        mapfile -t tags < <(echo "$releases_json" | jq -r --arg prefix "$FIRMWARE_TAG" '[.[] | select(.tagName | startswith($prefix))] | sort_by(.tagName) | reverse | .[].tagName')
+
+        total=${#tags[@]}
         echo "Found $total releases matching $FIRMWARE_TAG*"
         echo "Keep latest $KEEP_LATEST releases"
 
         if [ "$total" -gt "$KEEP_LATEST" ]; then
-          echo "$releases_json" | jq -r --argjson keep "$KEEP_LATEST" '.[$keep:] | .[] | "\(.tagName)\t\(.name)"' |
-            while IFS=$'\t' read -r tag name; do
-              [ -z "$tag" ] && continue
-              echo "Deleting old release: $tag ($name)"
-              gh release delete --repo "$GITHUB_REPOSITORY" "$tag" --yes || echo "::warning::Unable to delete release $tag."
-            done
-          echo "Kept $KEEP_LATEST latest releases, deleted $((total - KEEP_LATEST)) old releases"
+          deleted=0
+          for tag in "${tags[@]:$KEEP_LATEST}"; do
+            if [ "$tag" = "$current_tag" ]; then
+              echo "Skip current release: $tag"
+              continue
+            fi
+            echo "Deleting old release: $tag"
+            if gh release delete --repo "$GITHUB_REPOSITORY" "$tag" --yes; then
+              deleted=$((deleted + 1))
+            else
+              echo "::warning::Unable to delete release $tag."
+            fi
+          done
+          echo "Kept $KEEP_LATEST latest releases, deleted $deleted old releases"
         else
           echo "Only $total releases found, no cleanup needed (keeping all)"
         fi
